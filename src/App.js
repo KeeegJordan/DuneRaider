@@ -1,23 +1,69 @@
 import React, { Component } from 'react';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import './App.css';
-import Authentic from './Authentic';
 
-const Page = () => (
-  <div className="App">
-    <div className="App-header">
-      <h1>Hello</h1>
-      <a href="https://api.instagram.com/oauth/authorize/?client_id=6efe64d5e7a74f17b607a526b4099869&redirect_uri=https://dune-raider.firebaseapp.com/&response_type=code">
-      Log In</a>
-      <h1>{this.props.params.code}</h1>
-    </div>
-  </div>
-);
+class Page extends React.Component {
 
-function renderAnalytics() {
-  return (
-    <p>Hello</p>
-  );
+  render() {
+    return (
+      <div className="App">
+        <div className="App-header">
+          <h1>Hello</h1>
+          <Link to="signin">Sign In</Link>  
+          <p>Welcome <span id="name-container"></span></p>
+          <p>Your Firebase User ID is: <span id="uid-container"></span></p>
+          <p>Your profile picture: <img id="profile-pic"/></p>
+        </div>
+        
+      </div> 
+    );
+  }
+}
+
+class SignIn extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      error: ""
+    }
+
+    this.signIn = this.signIn.bind(this);
+  }
+
+  signIn() {
+    var url = new URL(window.location.href);
+    var codeParam = url.searchParams.get("code");
+    var errorParam = url.searchParams.get("error");
+    var stateParam = url.searchParams.get("state");
+
+    if (errorParam && !this.state.error) {
+      this.setState({
+          error: errorParam
+      });
+    } else if (!codeParam && !this.state.code && !errorParam) {
+      window.location.href  = 'https://us-central1-dune-raider.cloudfunctions.net/redirect';
+    } else if (codeParam && !this.state.code) {
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      var tokenFunctionURL = 'https://us-central1-dune-raider.cloudfunctions.net/token';
+      script.src = tokenFunctionURL +
+          '?code=' + encodeURIComponent(codeParam) +
+          '&state=' + encodeURIComponent(stateParam) +
+          '&callback=tokenReceived';
+      document.head.appendChild(script);
+    }
+  }
+
+  render() {
+    this.signIn();
+
+    return (
+      <div>
+        <div className="error">{this.state.error}</div>
+      </div>
+    );
+  }
+
 }
 
 class App extends Component {
@@ -25,7 +71,8 @@ class App extends Component {
     return (
       <Router>
         <div>
-          <Route path="/:code" component={Page}/>
+          <Route path="/" component={Page}/>
+          <Route path="/signin" component={SignIn}/>
         </div>
       </Router>
     );

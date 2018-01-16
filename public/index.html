@@ -10,6 +10,10 @@
     <title>React App</title>
   </head>
   <body>
+    <script src="/__/firebase/3.9.0/firebase-app.js"></script>
+    <script src="/__/firebase/3.9.0/firebase-auth.js"></script>
+    <script src="/__/firebase/init.js"></script>
+
     <noscript>
       You need to enable JavaScript to run this app.
     </noscript>
@@ -22,21 +26,17 @@
       </p>
     </div>
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('service-worker.js').then(function(registration) {
-            // Registration was successful
-            console.log('ServiceWorker registration successful with scope: ', registration.scope);
-          }, function(err) {
-            // registration failed :(
-            console.log('ServiceWorker registration failed: ', err);
-          }).catch(function(err) {
-            console.log(err)
+      function tokenReceived(data) {
+        if (data.token) {
+          firebase.auth().signInWithCustomToken(data.token).then(function() {
+            
           });
-        });
-      } else {
-        console.log('service worker is not supported');
+        } else {
+          console.error(data);
+          document.body.innerText = 'Error in the token Function: ' + data.error;
+        }
       }
     </script>
+    <script src="main.js"></script>
   </body>
 </html>
